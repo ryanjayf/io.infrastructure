@@ -1,0 +1,34 @@
+services:
+  discover-server:
+    build:
+      context: ../io.discovery/discover-server  # Adjusted path to the Dockerfile location
+      dockerfile: Dockerfile
+    image: ryanjayf/discover-server:v1
+    container_name: discover-server
+    ports:
+      - "${DISCOVERY_SERVER_PORT}:8761"    
+    networks:
+      - my_network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  config-server:
+    build:
+      context: ../io.configserver/config-server  # Adjusted path to the Dockerfile location
+      dockerfile: Dockerfile
+    image: ryanjayf/configserver:v1
+    container_name: configserver
+    ports:
+      - "${CONFIG_SERVER_PORT}:8888"
+    networks:
+      - my_network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discover-server:8761/eureka
+    depends_on:
+      - discover-server
+
+networks:
+  my_network:
+    driver: bridge
+    external: true
